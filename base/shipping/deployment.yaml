@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: shippingservice
+  name: shippingservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shippingservice
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: shippingservice
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/google-samples/microservices-demo/shippingservice:v0.10.4
+        name: shippingservice
+        ports:
+        - containerPort: 50051
+        env:
+          - name: PORT
+            value: "50051"
+status: {}

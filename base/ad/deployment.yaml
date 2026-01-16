@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: adservice
+  name: adservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adservice
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: adservice
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/google-samples/microservices-demo/adservice:v0.10.4
+        name: adservice
+        ports:
+        - containerPort: 9555
+        env:
+          - name: PORT
+            value: "9555"
+status: {}

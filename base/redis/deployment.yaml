@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: redis-cart
+  name: redis-cart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-cart
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: redis-cart
+    spec:
+      containers:
+      - image: redis:alpine
+        name: redis-cart
+        ports:
+        - containerPort: 6379
+        env:
+          - name: PORT
+            value: "6379"
+        volumeMounts:
+          - mountPath: /data
+            name: redis-data
+      volumes:
+      - name: redis-data
+        emptyDir: {}
+status: {}
