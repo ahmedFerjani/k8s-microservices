@@ -2,6 +2,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: currencyservice
+  namespace: microservices-demo
+  labels:
+    app: currencyservice
 spec:
   selector:
     app: currencyservice

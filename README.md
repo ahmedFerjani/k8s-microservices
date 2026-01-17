@@ -1,4 +1,4 @@
-My own implementation of Kubernetes microservices deployment, inspired by the [Google Cloud Platform microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo) project.  
+My own implementation of Kubernetes microservices deployment, inspired by the [Google Cloud Platform microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo) project. following best practices: pinned image versions, liveness/readiness probes, resource requests and limits, Ingress instead of NodePort, and multiple replicas for reliability.
 
 ## 🚀 Project Structure
 
@@ -23,7 +23,9 @@ k8s-microservices
     │   └── service.yaml
     ├── frontend
     │   ├── deployment.yaml
+    │   ├── ingress.yaml
     │   └── service.yaml
+    ├── namespace.yaml
     ├── payment
     │   ├── deployment.yaml
     │   └── service.yaml
@@ -40,10 +42,12 @@ k8s-microservices
         ├── deployment.yaml
         └── service.yaml
 ```
-## ⚙️ Presentation Layer
+## ⚙️ Components
+
+### Presentation Layer
 - **frontend**  
 
-## ⚙️ Included Microservices
+### Microservices
 - **cartservice**  
 - **checkoutservice**  
 - **currencyservice**  
@@ -53,10 +57,10 @@ k8s-microservices
 - **recommendationservice**  
 - **shippingservice**
 
-Each microservice has its own Deployment + Service YAML in the base/ folder
-
-## ⚙️ Supporting services
+### Supporting services
 - **redis-cart** (in-memory cache for cartservice)
+
+Each component has its own Deployment + Service YAML in the base/ folder
 
 ## 💻 Requirements
 
@@ -72,19 +76,17 @@ minikube start
 ```
 2. kubectl create namespace microservices
 ```bash
-kubectl create namespace microservices
+kubectl apply -f ./base/namespace
 ```
 
 3. Apply all base manifests recursively:
 ```bash
-kubectl apply -R -f ./base -n microservices
+kubectl apply -R -f ./base
 ```
 
 4. Verify deployments, services and pods
 ```bash
-kubectl get deploy -n microservices
-kubectl get svc -n microservices
-kubectl get pod -n microservices
+kubectl get all -n microservices-demo
 ```
 
 5. Access the frontend service

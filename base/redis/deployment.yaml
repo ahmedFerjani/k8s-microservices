@@ -1,32 +1,47 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: redis-cart
+  namespace: microservices-demo
   labels:
     app: redis-cart
-  name: redis-cart
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: redis-cart
-  strategy: {}
   template:
     metadata:
       labels:
         app: redis-cart
     spec:
       containers:
-      - image: redis:alpine
-        name: redis-cart
-        ports:
-        - containerPort: 6379
-        env:
-          - name: PORT
-            value: "6379"
-        volumeMounts:
-          - mountPath: /data
-            name: redis-data
+        - image: redis:8.4.0-alpine
+          name: redis-cart
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - mountPath: /data
+              name: redis-data
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            periodSeconds: 10
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            periodSeconds: 10
+            initialDelaySeconds: 15
+            timeoutSeconds: 3
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "200m"
+            limits:
+              memory: "128Mi"
+              cpu: "300m"
       volumes:
-      - name: redis-data
-        emptyDir: {}
-status: {}
+        - name: redis-data
+          emptyDir: {}
