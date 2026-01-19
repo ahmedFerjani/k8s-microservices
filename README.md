@@ -1,47 +1,19 @@
-My own implementation of Kubernetes microservices deployment, inspired by the [Google Cloud Platform microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo) project. following best practices: pinned image versions, liveness/readiness probes, resource requests and limits, Ingress instead of NodePort, and multiple replicas for reliability.
+My own implementation of Kubernetes microservices deployment, inspired by the [Google Cloud Platform microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo) project. 
+
+the project follows best practices: pinned image versions, liveness/readiness probes, resource requests and limits, Ingress instead of NodePort, and multiple replicas for reliability.
 
 ## 🚀 Project Structure
+The project includes two deployment methods:
+- kubectl deployment
+- Helm deployment
 
-```
-k8s-microservices
-├── README.md
-└── base
-    ├── ad
-    │   ├── deployment.yaml
-    │   └── service.yaml
-    ├── cart
-    │   ├── deployment.yaml
-    │   └── service.yaml
-    ├── checkout
-    │   ├── deployment.yaml
-    │   └── service.yaml
-    ├── currency
-    │   ├── deployment.yaml
-    │   └── service.yaml
-    ├── email
-    │   ├── deployment.yaml
-    │   └── service.yaml
-    ├── frontend
-    │   ├── deployment.yaml
-    │   ├── ingress.yaml
-    │   └── service.yaml
-    ├── namespace.yaml
-    ├── payment
-    │   ├── deployment.yaml
-    │   └── service.yaml
-    ├── productcatalog
-    │   ├── deployment.yaml
-    │   └── service.yaml
-    ├── recommendation
-    │   ├── deployment.yaml
-    │   └── service.yaml
-    ├── redis
-    │   ├── deployment.yaml
-    │   └── service.yaml
-    └── shipping
-        ├── deployment.yaml
-        └── service.yaml
-```
+Each deployment method is organized into its own folder which includes the following components:
+- Microservices: individual services such as cart, checkout, adservice, etc.
+- Frontend: the web application
+- Redis: caching service
+
+This structure allows for modular development, easy maintenance, and seamless deployment using either kubectl or Helm
+
 ## ⚙️ Components
 
 ### Presentation Layer
@@ -66,11 +38,14 @@ Each component has its own Deployment + Service YAML in the base/ folder
 
 - [Minikube](https://minikube.sigs.k8s.io/docs/start/) or any Kubernetes cluster  
 - `kubectl` CLI  
+- Helm 3+ (for Helm deployments)
 - Optional: Docker (if you want to build images locally)
 
 ## 🚀 Deploy Locally
 
-1. Start Minikube:
+### Using kubectl
+
+1. Start Minikube
 ```bash
 minikube start
 ```
@@ -79,7 +54,7 @@ minikube start
 kubectl apply -f ./base/namespace
 ```
 
-3. Apply all base manifests recursively:
+3. Apply all base manifests recursively
 ```bash
 kubectl apply -R -f ./base
 ```
@@ -94,13 +69,36 @@ kubectl get all -n microservices-demo
 minikube service frontend -n microservices
 ```
 
+### Using Helm
+1. Install Helm chart into the same namespace
+```bash
+helm install microservices-demo ./helm/microservices-demo \
+  --namespace microservices-demo \
+  --create-namespace
+```
+
+2. Verify deployments, services and pods
+```bash
+kubectl get all -n microservices-demo
+helm status microservices-demo -n microservices-demo
+```
+
+3. Access the frontend service
+```bash
+minikube service frontend -n microservices
+```
 
 ---
 
-### 🧹 Cleanup 
+## 🧹 Cleanup 
 
 How to remove everything cleanly:
-
+### Using kubectl
 ```bash
 kubectl delete ns microservices
+```
+
+### Using Helm
+```bash
+helm uninstall microservices-demo -n microservices-demo
 ```

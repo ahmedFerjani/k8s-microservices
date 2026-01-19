@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: productcatalogservice
+  namespace: microservices-demo
+  labels:
+    app: productcatalogservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: productcatalogservice
+  template:
+    metadata:
+      labels:
+        app: productcatalogservice
+    spec:
+      containers:
+        - image: us-central1-docker.pkg.dev/google-samples/microservices-demo/productcatalogservice:v0.10.4
+          name: productcatalogservice
+          ports:
+            - containerPort: 3550
+          env:
+            - name: PORT
+              value: "3550"
+          readinessProbe:
+            grpc:
+              port: 3550
+            periodSeconds: 12
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            grpc:
+              port: 3550
+            periodSeconds: 12
+            initialDelaySeconds: 15
+            timeoutSeconds: 3
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 100m
+            limits:
+              memory: 128Mi
+              cpu: 200m

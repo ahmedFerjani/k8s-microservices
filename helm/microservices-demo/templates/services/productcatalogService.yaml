@@ -1,0 +1,63 @@
+{{- if .Values.productcatalogservice.enabled }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.productcatalogservice.name }}
+  labels:
+    app: {{ .Values.productcatalogservice.name }}
+spec:
+  replicas: {{ .Values.productcatalogservice.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.productcatalogservice.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.productcatalogservice.name }}
+    spec:
+      containers:
+        - image: {{ .Values.productcatalogservice.image }}
+          name: {{ .Values.productcatalogservice.name }}
+          ports:
+            - containerPort: {{ .Values.productcatalogservice.port }}
+          env:
+            - name: PORT
+              value: "{{ .Values.productcatalogservice.port }}"
+          readinessProbe:
+            grpc:
+              port: {{ .Values.productcatalogservice.port }}
+            periodSeconds: 12
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            grpc:
+              port: {{ .Values.productcatalogservice.port }}
+            periodSeconds: 12
+            initialDelaySeconds: 15
+            timeoutSeconds: 3
+          resources:
+            requests:
+              memory: {{ .Values.productcatalogservice.resources.requests.memory }}
+              cpu: {{ .Values.productcatalogservice.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.productcatalogservice.resources.limits.memory }}
+              cpu: {{ .Values.productcatalogservice.resources.limits.cpu }}
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: productcatalogservice
+  labels:
+    app: {{ .Values.productcatalogservice.name }}
+spec:
+  selector:
+    app: {{ .Values.productcatalogservice.name }}
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: {{ .Values.productcatalogservice.port }}
+      targetPort: {{ .Values.productcatalogservice.port }}
+
+{{- end }}

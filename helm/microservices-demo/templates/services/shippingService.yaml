@@ -1,0 +1,64 @@
+{{- if .Values.shippingservice.enabled }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.shippingservice.name }}
+  labels:
+    app: {{ .Values.shippingservice.name }}
+spec:
+  replicas: {{ .Values.shippingservice.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.shippingservice.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.shippingservice.name }}
+    spec:
+      containers:
+        - image: {{ .Values.shippingservice.image }}
+          name: {{ .Values.shippingservice.name }}
+          ports:
+            - containerPort: {{ .Values.shippingservice.port }}
+          env:
+            - name: PORT
+              value: "{{ .Values.shippingservice.port }}"
+          readinessProbe:
+            grpc:
+              port: {{ .Values.shippingservice.port }}
+            periodSeconds: 12
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            grpc:
+              port: {{ .Values.shippingservice.port }}
+            periodSeconds: 12
+            initialDelaySeconds: 15
+            timeoutSeconds: 3
+          resources:
+            requests:
+              memory: {{ .Values.shippingservice.resources.requests.memory }}
+              cpu: {{ .Values.shippingservice.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.shippingservice.resources.limits.memory }}
+              cpu: {{ .Values.shippingservice.resources.limits.cpu }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: shippingservice
+  labels:
+    app: {{ .Values.shippingservice.name }}
+spec:
+  selector:
+    app: {{ .Values.shippingservice.name }}
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: {{ .Values.shippingservice.port }}
+      targetPort: {{ .Values.shippingservice.port }}
+
+{{- end }}

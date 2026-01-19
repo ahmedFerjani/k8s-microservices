@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.frontend.name }}
+  labels:
+    app: {{ .Values.frontend.name }}
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.frontend.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.frontend.name }}
+    spec:
+      containers:
+        - image: {{ .Values.frontend.image }}
+          name: {{ .Values.frontend.name }}
+          ports:
+            - containerPort: {{ .Values.frontend.port }}
+          env:
+            - name: PORT
+              value: "{{ .Values.frontend.port }}"
+            - name: PRODUCT_CATALOG_SERVICE_ADDR
+              value: "{{ .Values.productcatalogservice.name }}:{{ .Values.productcatalogservice.port }}"
+            - name: CURRENCY_SERVICE_ADDR
+              value: "{{ .Values.currencyservice.name }}:{{ .Values.currencyservice.port }}"
+            - name: CART_SERVICE_ADDR
+              value: "{{ .Values.cartservice.name }}:{{ .Values.cartservice.port }}"
+            - name: RECOMMENDATION_SERVICE_ADDR
+              value: "{{ .Values.recommendationservice.name }}:{{ .Values.recommendationservice.port }}"
+            - name: SHIPPING_SERVICE_ADDR
+              value: "{{ .Values.shippingservice.name }}:{{ .Values.shippingservice.port }}"
+            - name: CHECKOUT_SERVICE_ADDR
+              value: "{{ .Values.checkoutservice.name }}:{{ .Values.checkoutservice.port }}"
+            - name: AD_SERVICE_ADDR
+              value: "{{ .Values.adservice.name }}:{{ .Values.adservice.port }}"
+            - name: SHOPPING_ASSISTANT_SERVICE_ADDR
+              value: "{{ .Values.shoppingservice.name }}:{{ .Values.shoppingservice.port }}"
+          readinessProbe:
+            periodSeconds: 12
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+            httpGet:
+              path: "/_healthz"
+              port: {{ .Values.frontend.port }}
+              httpHeaders:
+                - name: "Cookie"
+                  value: "shop_session-id=x-readiness-probe"
+          livenessProbe:
+            periodSeconds: 12
+            initialDelaySeconds: 15
+            timeoutSeconds: 3
+            httpGet:
+              path: "/_healthz"
+              port: {{ .Values.frontend.port }}
+              httpHeaders:
+                - name: "Cookie"
+                  value: "shop_session-id=x-liveness-probe"
+          resources:
+            requests:
+              cpu: {{ .Values.frontend.resources.requests.cpu }}
+              memory: {{ .Values.frontend.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.frontend.resources.limits.cpu }}
+              memory: {{ .Values.frontend.resources.limits.memory }}
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+  labels:
+    app: {{ .Values.frontend.name }}
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: microservices.frontend
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.frontend.serviceName }}
+                port:
+                  number: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.frontend.serviceName }}
+  labels:
+    app: {{ .Values.frontend.name }}
+spec:
+  selector:
+    app: {{ .Values.frontend.name }}
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: {{ .Values.frontend.port }}

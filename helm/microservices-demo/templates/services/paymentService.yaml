@@ -1,0 +1,65 @@
+{{- if .Values.paymentservice.enabled }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.paymentservice.name }}
+  labels:
+    app: {{ .Values.paymentservice.name }}
+spec:
+  replicas: {{ .Values.paymentservice.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.paymentservice.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.paymentservice.name }}
+    spec:
+      containers:
+        - image: {{ .Values.paymentservice.image }}
+          name: {{ .Values.paymentservice.name }}
+          ports:
+            - containerPort: {{ .Values.paymentservice.port }}
+          env:
+            - name: PORT
+              value: "{{ .Values.paymentservice.port }}"
+            - name: "DISABLE_PROFILER"
+              value: "{{ .Values.paymentservice.disableProfiler }}"
+          readinessProbe:
+            grpc:
+              port: {{ .Values.paymentservice.port }}
+            periodSeconds: 12
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            grpc:
+              port: {{ .Values.paymentservice.port }}
+            periodSeconds: 12
+            initialDelaySeconds: 15
+            timeoutSeconds: 3
+          resources:
+            requests:
+              memory: {{ .Values.paymentservice.resources.requests.memory }}
+              cpu: {{ .Values.paymentservice.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.paymentservice.resources.limits.memory }}
+              cpu: {{ .Values.paymentservice.resources.limits.cpu }}
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: paymentservice
+  labels:
+    app: {{ .Values.paymentservice.name }}
+spec:
+  selector:
+    app: {{ .Values.paymentservice.name }}
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: {{ .Values.paymentservice.port }}
+      targetPort: {{ .Values.paymentservice.port }}
+
+{{- end }}
